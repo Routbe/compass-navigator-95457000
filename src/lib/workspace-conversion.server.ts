@@ -184,7 +184,7 @@ async function maybeExecute(transferId: string): Promise<{ completed: boolean; w
   const days = SUNSET_DAYS;
   const details = readConversionDetails(t.details);
   const { resolveInvites } = await import("./workspaces.server");
-  const invites = (await resolveInvites(details.invites, src).catch(() => [])).filter((i) => i.userId !== t.target_user_id);
+  const invites = (await resolveInvites(details.invites, src).catch((): Awaited<ReturnType<typeof resolveInvites>> => [])).filter((i) => i.userId !== t.target_user_id);
 
   // One transaction: if any statement fails, nothing changes.
   await sql.transaction([

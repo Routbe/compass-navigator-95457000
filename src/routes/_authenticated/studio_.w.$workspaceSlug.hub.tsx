@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { DocHelpLink } from "@/components/seo/DocHelpLink";
 import { WorkspaceHubView } from "@/components/workspace/WorkspaceHubView";
 import { activateScopeFromUrl, getWorkspaceHub, saveWorkspaceHub } from "@/lib/workspaces.functions";
-import { HUB_LIMITS, workspaceHubSchema, type WorkspaceHub } from "@/lib/workspace-hub";
+import { HUB_LIMITS, hubLinkSchema, type WorkspaceHub } from "@/lib/workspace-hub";
 import { ROLE_LABELS } from "@/lib/workspace-rules";
 
 export const Route = createFileRoute("/_authenticated/studio_/w/$workspaceSlug/hub")({
@@ -72,7 +72,7 @@ function WorkspaceHubPage() {
   const edit = ws.canEdit;
 
   const addLink = () => {
-    const parsed = workspaceHubSchema.shape.links.element.safeParse({ title: linkTitle, url: linkUrl });
+    const parsed = hubLinkSchema.safeParse({ title: linkTitle, url: linkUrl });
     if (!parsed.success) return void toast.error(parsed.error.issues[0]?.message ?? "Ongeldige link.");
     if (hub.links.length >= HUB_LIMITS.links) return void toast.error(`Maximaal ${HUB_LIMITS.links} links.`);
     setHub({ ...hub, links: [...hub.links, parsed.data] });
