@@ -63,7 +63,7 @@ function NewWorkspaceWizard() {
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY);
       if (raw) {
-        const saved = JSON.parse(raw) as Partial<WizardDraft> & { invites?: { target?: string; email?: string; role: InviteRole }[] };
+        const saved = JSON.parse(raw) as Omit<Partial<WizardDraft>, "invites"> & { invites?: { target?: string; email?: string; role: InviteRole }[] };
         // Older drafts stored invites as { email }; keep them as { target }.
         const invites = (saved.invites ?? []).map((i) => ({ target: i.target ?? i.email ?? "", role: i.role })).filter((i) => i.target);
         setD({ ...emptyDraft(), ...saved, invites });
