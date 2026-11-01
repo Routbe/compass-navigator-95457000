@@ -1,4 +1,5 @@
 import { sql } from "@/lib/neon";
+import { maskEmail, maskEmailsInText } from "@/lib/security/redact";
 
 import {
   asNotificationLocale,
@@ -197,7 +198,7 @@ async function mailAuthAction(
   const language = asEmailLanguage(opts.locale ?? locale);
   const templateId = brevoTemplateId(category, language);
   console.info(
-    `[Auth] Sending ${action} mail via Brevo template #${templateId} (lang=${language}) to ${email}`,
+    `[Auth] Sending ${action} mail via Brevo template #${templateId} (lang=${language}) to ${maskEmail(email)}`,
   );
   const { sent, error } = await sendMail({
     to: email,
@@ -226,7 +227,7 @@ async function mailAuthAction(
   });
   if (!sent) {
     console.error(
-      `[auth-mail] ${action} could not be delivered: ${error ?? "unknown Brevo error"}`,
+      `[auth-mail] ${action} could not be delivered: ${maskEmailsInText(error ?? "unknown Brevo error")}`,
     );
   }
   return sent;
