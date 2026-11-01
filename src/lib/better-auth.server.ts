@@ -6,6 +6,7 @@ import { genericOAuth } from "better-auth/plugins/generic-oauth";
 import { twoFactor } from "better-auth/plugins/two-factor";
 import { passkey } from "@better-auth/passkey";
 import { GatewayPool, databaseTransport, hasDatabase } from "@/lib/neon";
+import { betterAuthDatabase } from "@/lib/neon-kysely.server";
 import { APP_DOMAINS } from "@/lib/app-domains";
 import { canonicalAppUrl, isApprovedHost } from "@/lib/app-url";
 import { EXPLICIT_ACCOUNT_LINKING } from "@/lib/identity/link-rules";
@@ -320,7 +321,7 @@ export function createRoutAuth(request?: Request) {
     baseURL: baseUrlFor(request),
     basePath: "/api/auth",
     secret,
-    database: new GatewayPool() as never,
+    database: betterAuthDatabase() as never,
     user: { modelName: "neon_auth.user" },
     session: {
       modelName: "neon_auth.session",

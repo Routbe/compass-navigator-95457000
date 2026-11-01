@@ -39,6 +39,9 @@ export function databaseTransport(): "gateway" | "none" {
   return hasDatabase() ? "gateway" : "none";
 }
 
+/** Transaction-scoped switch to the least-privilege role (no-op when already rout_app). */
+export const RUNTIME_ROLE_SWITCH = "set local role rout_app";
+
 export const RUNTIME_ROLE_GUARD = `do $guard$
 begin
   if current_user <> 'rout_app' or exists (
@@ -110,6 +113,9 @@ export async function runBatch(
     if (TRANSACTION_CONTROL.test(statement.query)) throw new Error("interactive_transactions_unsupported: use one atomic PostgreSQL batch");
   }
   const prefix = [
+    // The linked login may be the database owner; every batch steps down to
+    // rout_app so RLS applies. The guard below still fails closed otherwise.
+    { query: RUNTIME_ROLE_SWITCH, params: [] },
     ...(opts.withContext === false ? [] : activeContext()),
     { query: RUNTIME_ROLE_GUARD, params: [] },
   ];
