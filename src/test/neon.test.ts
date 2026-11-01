@@ -13,15 +13,16 @@ it("refuses fake interactive transactions before any network request", async () 
   await expect(pool.connect()).rejects.toThrow("interactive_transactions_unsupported");
   expect(fetch).not.toHaveBeenCalled();
 });
-it("sends authenticated context and role guard in the same atomic batch", async () => {
+it("steps down to rout_app, then sends context and role guard in the same atomic batch", async () => {
   vi.stubEnv("NEON_API_KEY", "test"); vi.stubEnv("LOVABLE_API_KEY", "test");
   const userId="11111111-1111-4111-8111-111111111111";
   const fetch=vi.fn(async (_url, options) => {
     const body=JSON.parse(options.body);
-    expect(body.queries[0].query).toContain("set_config('rout.current_user_id', $1, true)");
-    expect(body.queries[0].params[0]).toBe(userId);
-    expect(body.queries[1].query).toContain("runtime_role_unsafe");
-    return Response.json({results: [{rows:[]},{rows:[]},{rows:[{ok:true}],command:"SELECT",rowCount:1}]});
+    expect(body.queries[0].query).toBe("set local role rout_app");
+    expect(body.queries[1].query).toContain("set_config('rout.current_user_id', $1, true)");
+    expect(body.queries[1].params[0]).toBe(userId);
+    expect(body.queries[2].query).toContain("runtime_role_unsafe");
+    return Response.json({results: [{rows:[]},{rows:[]},{rows:[]},{rows:[{ok:true}],command:"SELECT",rowCount:1}]});
   });
   vi.stubGlobal("fetch",fetch);
   const results=await withDbContext({userId,workspaceId:null},()=>runBatch([{query:"select true as ok",params:[]}]));
