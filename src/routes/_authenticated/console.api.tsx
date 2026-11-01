@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { handleUpdatedSample, WEBHOOK_VERIFY_SNIPPET } from "@/lib/oauth/integration-templates";
 import { useConsoleApps } from "@/components/console/console-data";
 import { ApiActivity } from "@/components/console/ApiActivity";
+import { DocHelpLink } from "@/components/seo/DocHelpLink";
 
 export const Route = createFileRoute("/_authenticated/console/api")({
   head: () => ({ meta: [
@@ -34,6 +35,7 @@ function ApiConsole() {
         </ConsoleCard>
         <HandleWebhookPreview />
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4" /> Secret keys belong on your server only.</div>
+        <DocHelpLink to="/support/workspace/developer-console">Lees hoe je veilig API-sleutels rouleert</DocHelpLink>
       </div>
     </div>
   </ConsolePage>;

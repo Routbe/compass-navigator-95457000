@@ -62,7 +62,8 @@ export default function Studio() {
   // In workspace mode Studio means the workspace's own Profile Hub, not this person's.
   const ctxFn = useServerFn(getWorkspaceContext);
   const wsCtx = useQuery({ queryKey: ["workspace-context"], queryFn: () => ctxFn(), enabled: Boolean(user), retry: false });
-  const activeWorkspace = wsCtx.data?.available ? wsCtx.data.workspaces.find((w) => w.id === wsCtx.data.activeWorkspaceId) : undefined;
+  const ctxData = wsCtx.data;
+  const activeWorkspace = ctxData?.available && ctxData.activeWorkspaceId ? ctxData.workspaces.find((w) => w.id === ctxData.activeWorkspaceId) : undefined;
   useEffect(() => {
     if (activeWorkspace) nav(`/studio/w/${encodeURIComponent(activeWorkspace.slug)}/hub`, { replace: true });
   }, [activeWorkspace, nav]);
