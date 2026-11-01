@@ -3,6 +3,7 @@
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
+export type PublicAppCredentialType = "badge" | "certificate" | "diploma";
 export type PublicAppRole = "admin" | "moderator" | "user";
 export type PublicIdentityProvider = "w_identity" | "didit" | "manual";
 export type PublicRootRedirectKind = "profile_hub" | "custom_url" | "rout_main" | "none";
@@ -287,6 +288,21 @@ export interface PublicAppEmailAssignmentsRow {
   "alias_id": string | null;
   "assigned_email": string;
   "updated_at": string | Date;
+}
+
+export interface PublicAppIssuedCredentialsRow {
+  "id": string;
+  "user_id": string;
+  "client_id": string;
+  "type": PublicAppCredentialType;
+  "title": string;
+  "description": string | null;
+  "image_url": string | null;
+  "issued_at": string | Date;
+  "revoked_at": string | Date | null;
+  "accepted_at": string | Date | null;
+  "show_on_name": boolean;
+  "request_key": string;
 }
 
 export interface PublicApprovedHandlesRow {
@@ -1644,6 +1660,12 @@ export interface PublicUserCalendarFeedsRow {
   "updated_at": string | Date;
 }
 
+export interface PublicUserConnectedAppsVisibilityRow {
+  "user_id": string;
+  "client_id": string;
+  "is_public": boolean;
+}
+
 export interface PublicUserCustomBadgesRow {
   "user_id": string;
   "badge_id": string;
@@ -1852,6 +1874,7 @@ export interface PublicUsersRow {
   "sunset_at": string | Date | null;
   "migrated_to_workspace_id": string | null;
   "auth_user_id": string | null;
+  "latest_audit_hash": string | null;
 }
 
 export interface PublicVerificationPaymentsRow {
@@ -1956,7 +1979,6 @@ export interface PublicWorkspaceInvitesRow {
   "invited_by": string;
   "status": string;
   "created_at": string | Date;
-  "invited_user_id": string | null;
 }
 
 export interface PublicWorkspaceMembersRow {
@@ -1986,7 +2008,6 @@ export interface PublicWorkspaceTransfersRow {
   "completed_at": string | Date | null;
   "expires_at": string | Date;
   "created_at": string | Date;
-  "details": JsonValue;
 }
 
 export interface PublicWorkspacesRow {
@@ -2004,7 +2025,6 @@ export interface PublicWorkspacesRow {
   "legacy_user_id": string | null;
   "description": string | null;
   "category": string | null;
-  "public_profile": JsonValue;
 }
 
 export interface StorageBucketsRow {
@@ -2051,6 +2071,7 @@ export interface DbTables {
   "public.analytics_events": PublicAnalyticsEventsRow;
   "public.api_keys": PublicApiKeysRow;
   "public.app_email_assignments": PublicAppEmailAssignmentsRow;
+  "public.app_issued_credentials": PublicAppIssuedCredentialsRow;
   "public.approved_handles": PublicApprovedHandlesRow;
   "public.auth_tokens": PublicAuthTokensRow;
   "public.availability_cache": PublicAvailabilityCacheRow;
@@ -2162,6 +2183,7 @@ export interface DbTables {
   "public.user_badges": PublicUserBadgesRow;
   "public.user_birthdates": PublicUserBirthdatesRow;
   "public.user_calendar_feeds": PublicUserCalendarFeedsRow;
+  "public.user_connected_apps_visibility": PublicUserConnectedAppsVisibilityRow;
   "public.user_custom_badges": PublicUserCustomBadgesRow;
   "public.user_custom_presence": PublicUserCustomPresenceRow;
   "public.user_encrypted_audit_logs": PublicUserEncryptedAuditLogsRow;
