@@ -16,6 +16,7 @@
 - Keep the imported TanStack Start file routes, server entry, MDX catalog, and source design system together; public pages rely on these shared conventions.
 - Preserve generated Lovable Cloud integrations and project settings; repository imports must not overwrite managed files or credentials.
 - The imported application still uses its existing Neon gateway and Better Auth account system; do not silently replace it or apply its database scripts to the Cloud database.
+- Every gateway batch starts with `set local role rout_app` before the role guard, and Better Auth uses the gateway Kysely dialect with `transaction: false`. Why: the linked login may be the owner, yet RLS must still apply, and the gateway has no interactive transactions.
 - Subdirectories may contain their own AGENTS.md; read them before changing files there.
 - Use the repository compiler and test configuration, including MDX virtual catalog support; its imported source was authored against those settings.
 - Documentation uses AppLayout for the same public header/footer and inherited theme as the homepage; MDX enhancements stay inside the article, never define a separate site palette. Why: public and developer information must remain recognizably ROUT.
