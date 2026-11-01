@@ -15,8 +15,8 @@
  * boolean result plus a logged provider body is the contract.
  */
 
-import {
 import { maskEmail } from "@/lib/security/redact";
+import {
   adminAlertTemplateId,
   brevoTemplateId,
   globalFallbackTemplateId,
