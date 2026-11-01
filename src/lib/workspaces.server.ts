@@ -1,6 +1,6 @@
 /** Server-only workspace access. Every role decision is made here, never in the browser. */
 import { sql } from "@/lib/neon";
-import { isWorkspaceRole, type WorkspaceRole } from "./workspace-rules";
+import { inviteTargetLabel, isWorkspaceRole, parseInviteTarget, type WorkspaceRole } from "./workspace-rules";
 
 export const ACTIVE_WORKSPACE_COOKIE = "active_workspace_id";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
