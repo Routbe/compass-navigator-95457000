@@ -1,4 +1,7 @@
 /** Pure rules for converting a personal account into a Workspace. */
+import { z } from "zod";
+import { INVITE_ROLES, MAX_WIZARD_INVITES, WORKSPACE_CATEGORIES } from "./workspace-wizard";
+import { workspaceBillingSchema } from "./workspace-pricing";
 
 export const SUNSET_DAYS = 30;
 export const TRANSFER_TTL_DAYS = 7;
@@ -46,3 +49,23 @@ export function badgeAfterConversion(_before: "blue" | "none"): "none" {
 export function isSunsetActive(status: string | null | undefined, sunsetAt: string | null | undefined, now: Date): boolean {
   return status === "migrated_sunset" && !!sunsetAt && new Date(sunsetAt).getTime() > now.getTime();
 }
+
+/**
+ * Wizard answers that travel with a conversion until both sides agreed: organisation type,
+ * description, extra colleagues (e-mail or @username) and the chosen plan (intent only, never a paid grant).
+ */
+export const conversionDetailsSchema = z.object({
+  description: z.string().trim().max(280).default(""),
+  category: z.enum(WORKSPACE_CATEGORIES).nullable().default(null),
+  invites: z.array(z.object({ target: z.string().trim().min(3).max(254), role: z.enum(INVITE_ROLES) })).max(MAX_WIZARD_INVITES).default([]),
+}).extend(workspaceBillingSchema.shape);
+export type ConversionDetails = z.infer<typeof conversionDetailsSchema>;
+
+/** Stored details are re-validated on execution; anything invalid falls back to safe defaults. */
+export function readConversionDetails(raw: unknown): ConversionDetails {
+  const parsed = conversionDetailsSchema.safeParse(raw ?? {});
+  return parsed.success ? parsed.data : conversionDetailsSchema.parse({});
+}
+
+/** Converted logins keep full access (as workspace admin) until the sunset date, then they are removed. */
+export const SUNSET_MEMBER_ROLE = "admin" as const;
