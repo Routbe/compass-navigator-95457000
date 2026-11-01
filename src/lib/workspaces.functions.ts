@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/middleware";
 import { WORKSPACE_ROLES, checkMemberChange, canManageTeam, canAssignRole, type WorkspaceRole } from "./workspace-rules";
 import { unavailableWorkspaceContext } from "./workspace-availability";
 import { workspaceBillingSchema } from "./workspace-pricing";
+import { workspaceHubSchema, type WorkspaceHub } from "./workspace-hub";
 
 const roleSchema = z.enum(WORKSPACE_ROLES);
 const uuid = z.string().uuid();
@@ -453,7 +454,7 @@ export const deleteWorkspace = createServerFn({ method: "POST" })
 
 export type WorkspaceHubState = {
   workspaceId: string; name: string; slug: string; avatarUrl: string | null; role: WorkspaceRole; canEdit: boolean;
-  hub: import("./workspace-hub").WorkspaceHub;
+  hub: WorkspaceHub;
 };
 
 /** The workspace's own Profile Hub (link-in-bio). Members read; owners, admins and editors edit. */
@@ -474,10 +475,7 @@ export const getWorkspaceHub = createServerFn({ method: "POST" })
 
 export const saveWorkspaceHub = createServerFn({ method: "POST" })
   .middleware([requireAuth])
-  .inputValidator(async (d) => {
-    const { workspaceHubSchema } = await import("./workspace-hub");
-    return z.object({ workspaceId: uuid, hub: workspaceHubSchema }).parse(d);
-  })
+  .inputValidator((d) => z.object({ workspaceId: uuid, hub: workspaceHubSchema }).parse(d))
   .handler(async ({ data, context }) => {
     const { sql } = await import("@/lib/neon");
     const { getWorkspaceRole } = await import("./workspaces.server");
