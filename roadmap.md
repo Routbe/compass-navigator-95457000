@@ -51,3 +51,9 @@
 - [x] Verify: typecheck, tests, team-roles help link routes correctly.
 - [ ] Click through workspace creation, @username invite and conversion while signed in — not yet done in the browser; database steps verified directly.
 - [ ] Wallet top-up fix (security finding) — waiting for allowed top-up amounts from the user.
+
+## Security findings (deep scan)
+- [x] Wallet top-ups limited to €10/€25/€50/€100/€250, verified against Stripe's paid amount before crediting.
+- [x] Mask emails / hide message text in mail and sign-in logs; generic errors for user-info and Bluesky sign-in.
+- [x] Tests for 401/403 refusal and rejected wallet amounts; typecheck exit 0, 236 files / 1,340 tests pass.
+- [ ] Wallet top-up end-to-end with a real payment — blocked by missing Stripe keys.
