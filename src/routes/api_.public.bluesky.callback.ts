@@ -4,6 +4,17 @@ import { clearLinkIntent, maybeLinkToCurrentUser } from "@/lib/link-intent";
 const STATE_COOKIE = "rout_bsky_state";
 const PENDING_COOKIE = "rout_fedi_pending";
 
+/** Alleen onze eigen, vaste meldingen gaan naar de bezoeker; al het andere wordt generiek. */
+const VISITOR_SAFE_MESSAGES = new Set([
+  "Deze inlogpoging is verlopen. Probeer opnieuw.",
+  "Deze inlogpoging is niet geldig.",
+]);
+
+function blueskyFailureMessage(error: unknown): string {
+  if (error instanceof Error && VISITOR_SAFE_MESSAGES.has(error.message)) return error.message;
+  return "Er is een tijdelijk verbindingsprobleem opgetreden.";
+}
+
 function redirectTo(location: string, cookies: string[] = []) {
   const headers = new Headers({ location });
   cookies.forEach((c) => headers.append("set-cookie", c));
@@ -26,11 +37,12 @@ export const Route = createFileRoute("/api_/public/bluesky/callback")({
         const clear = `${STATE_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=0`;
 
         if (failure || !code || !returnedState) {
-          const message = failure ?? "De aanmelding bij Bluesky is afgebroken.";
+          const message = failure
+            ? "Bluesky heeft de aanmelding geweigerd. Probeer het opnieuw."
+            : "De aanmelding bij Bluesky is afgebroken.";
           console.error("[bluesky] callback rejected", {
-            error: url.searchParams.get("error"),
-            error_description: url.searchParams.get("error_description"),
-            iss: url.searchParams.get("iss"),
+            error: url.searchParams.get("error")?.slice(0, 80) ?? null,
+            iss: url.searchParams.get("iss")?.slice(0, 200) ?? null,
             hasCode: Boolean(code),
             hasState: Boolean(returnedState),
           });
@@ -90,9 +102,12 @@ export const Route = createFileRoute("/api_/public/bluesky/callback")({
             `${PENDING_COOKIE}=${encodeURIComponent(pending)}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=900`,
           ]);
         } catch (error) {
-          console.error("[auth] bluesky callback failed", error);
-          const message = error instanceof Error ? error.message : "Bluesky-login mislukte.";
-          return redirectTo(`/auth/sign-in?error=provider_rejected&bluesky_error=${encodeURIComponent(message)}`, [clear]);
+          const { logServerError } = await import("@/lib/security/safe-errors");
+          logServerError("auth.bluesky.callback", error);
+          return redirectTo(
+            `/auth/sign-in?error=provider_rejected&bluesky_error=${encodeURIComponent(blueskyFailureMessage(error))}`,
+            [clear],
+          );
         }
       },
     },

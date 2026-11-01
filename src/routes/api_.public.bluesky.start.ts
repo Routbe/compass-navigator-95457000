@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api_/public/bluesky/start")({
           const problem = blueskyOriginProblem(origin);
           if (problem) {
             console.warn(`[bluesky] login blocked: ${problem} (origin=${origin})`);
-            throw new Error(problem);
+            throw Object.assign(new Error(problem), { name: "BlueskyBlocked" });
           }
           const { url: authorizeUrl, state } = await startBlueskyLogin({ handle, origin, next });
           const sealed = await sealBlueskyState(state);
@@ -33,8 +33,13 @@ export const Route = createFileRoute("/api_/public/bluesky/start")({
           headers.append("set-cookie", linkIntentCookie(url.searchParams.get("link") === "1"));
           return new Response(null, { status: 302, headers });
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Bluesky-login mislukte.";
-          console.error("[bluesky] start failed", { origin, message });
+          // `problem` (vaste configuratiemelding) mag zichtbaar zijn; andere fouten niet.
+          const message =
+            error instanceof Error && error.name === "BlueskyBlocked"
+              ? error.message
+              : "Er is een tijdelijk verbindingsprobleem opgetreden.";
+          const { logServerError } = await import("@/lib/security/safe-errors");
+          logServerError("auth.bluesky.start", error);
           return new Response(null, {
             status: 302,
             headers: { location: `/auth/sign-in?bluesky_error=${encodeURIComponent(message)}` },
