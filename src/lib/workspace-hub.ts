@@ -7,9 +7,6 @@ import { z } from "zod";
 
 export const HUB_LIMITS = { tagline: 160, bio: 600, links: 20, linkTitle: 60, linkUrl: 500 } as const;
 
-export const HUB_ACCENTS = ["neutral", "blue", "green", "orange", "rose"] as const;
-export type HubAccent = (typeof HUB_ACCENTS)[number];
-
 const httpsUrl = z
   .string()
   .trim()
@@ -32,7 +29,6 @@ export const hubLinkSchema = z.object({
 export const workspaceHubSchema = z.object({
   tagline: z.string().trim().max(HUB_LIMITS.tagline).default(""),
   bio: z.string().trim().max(HUB_LIMITS.bio).default(""),
-  accent: z.enum(HUB_ACCENTS).default("neutral"),
   links: z.array(hubLinkSchema).max(HUB_LIMITS.links, `Maximaal ${HUB_LIMITS.links} links.`).default([]),
   published: z.boolean().default(false),
 });
@@ -40,7 +36,7 @@ export const workspaceHubSchema = z.object({
 export type WorkspaceHub = z.infer<typeof workspaceHubSchema>;
 export type WorkspaceHubLink = z.infer<typeof hubLinkSchema>;
 
-export const emptyHub = (): WorkspaceHub => ({ tagline: "", bio: "", accent: "neutral", links: [], published: false });
+export const emptyHub = (): WorkspaceHub => ({ tagline: "", bio: "", links: [], published: false });
 
 /** Reads stored JSON defensively: invalid or unknown data becomes an empty, unpublished hub. */
 export function readHub(raw: unknown): WorkspaceHub {
