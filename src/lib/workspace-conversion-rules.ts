@@ -69,3 +69,8 @@ export function readConversionDetails(raw: unknown): ConversionDetails {
 
 /** Converted logins keep full access (as workspace admin) until the sunset date, then they are removed. */
 export const SUNSET_MEMBER_ROLE = "admin" as const;
+
+/** Whole days left before the sunset (0 on the last day), never negative. */
+export function daysLeft(sunsetAt: string, now: Date): number {
+  return Math.max(0, Math.ceil((new Date(sunsetAt).getTime() - now.getTime()) / 86_400_000));
+}
