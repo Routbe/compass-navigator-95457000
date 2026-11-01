@@ -293,5 +293,4 @@ async function scrubOne(u: { id: string; ba: string | null }) {
           account_status = 'retired', user_metadata = user_metadata - 'neon_auth_id', updated_at = now() where id = ${u.id}`,
     ]);
   }
-  return { scrubbed: due.length };
 }

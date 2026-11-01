@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth/middleware";
+import { conversionDetailsSchema } from "./workspace-conversion-rules";
 
 async function req() {
   const { getRequest } = await import("@tanstack/react-start/server");
@@ -26,7 +27,11 @@ export const getConversionPreflight = createServerFn({ method: "GET" })
 
 export const startWorkspaceConversion = createServerFn({ method: "POST" })
   .middleware([requireAuth])
-  .inputValidator((d) => z.object({ workspaceName: z.string().trim().min(1).max(80), target: z.string().trim().min(3).max(254) }).parse(d))
+  .inputValidator((d) => z.object({
+    workspaceName: z.string().trim().min(1).max(80),
+    target: z.string().trim().min(3).max(254),
+    details: conversionDetailsSchema,
+  }).parse(d))
   .handler(async ({ data, context }) => {
     const { startConversion } = await import("./workspace-conversion.server");
     return startConversion({ id: context.userId, email: context.user.email }, data, await req());
@@ -55,7 +60,7 @@ export const acceptWorkspaceTransfer = createServerFn({ method: "POST" })
     return acceptTransfer(context.user, data.token);
   });
 
-/** Readable by sunset accounts too (it powers their blocking notice). */
+/** Sunset accounts read this to show how long their login keeps working. */
 export const getSunsetStatus = createServerFn({ method: "GET" }).handler(async () => {
   const { currentUser } = await import("@/lib/auth/session.server");
   const user = await currentUser().catch(() => null);
