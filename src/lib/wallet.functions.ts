@@ -1,18 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth/middleware";
+import { walletTopupAmountSchema } from "@/lib/wallet-tiers";
 
 /** RPC-laag voor de SecureShield prepaid wallet. Alles vereist een sessie. */
 
-const topupSchema = z.object({
-  amountCents: z.number().int().min(300).max(20_000),
-  origin: z.string().url().max(300),
-});
+export const topupSchema = z
+  .object({
+    amountCents: walletTopupAmountSchema,
+    origin: z.string().url().max(300),
+  })
+  .strict();
 
-const autoTopupSchema = z.object({
-  enabled: z.boolean(),
-  amountCents: z.number().int().min(300).max(20_000),
-});
+export const autoTopupSchema = z
+  .object({
+    enabled: z.boolean(),
+    amountCents: walletTopupAmountSchema,
+  })
+  .strict();
 
 export const getWallet = createServerFn({ method: "GET" })
   .middleware([requireAuth])

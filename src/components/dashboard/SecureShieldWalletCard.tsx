@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { getWallet, startWalletTopupCheckout, updateWalletAutoTopup } from "@/lib/wallet.functions";
+import { WALLET_TOPUP_TIERS_CENTS, type WalletTopupCents } from "@/lib/wallet-tiers";
 
 type WalletData = Awaited<ReturnType<typeof getWallet>>;
 
-const TOPUPS = [300, 500, 1000, 2500];
+const TOPUPS = WALLET_TOPUP_TIERS_CENTS;
 
 function euro(cents: number): string {
   return new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" }).format(cents / 100);
@@ -46,7 +47,7 @@ export function SecureShieldWalletCard() {
 
   if (!user) return null;
 
-  async function topup(amountCents: number) {
+  async function topup(amountCents: WalletTopupCents) {
     setBusy(true);
     try {
       const result = await startTopup({
@@ -130,7 +131,7 @@ export function SecureShieldWalletCard() {
               ))}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Minimum {euro(wallet.minTopupCents)} — dat dekt de transactiekosten van de gateway.
+              Kies €10, €25, €50, €100 of €250.
             </p>
           </div>
 

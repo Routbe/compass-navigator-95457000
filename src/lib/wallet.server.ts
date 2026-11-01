@@ -1,13 +1,19 @@
 /** Server-only logica voor de ROUT SecureShield™ prepaid wallet. */
 import { sql } from "@/lib/neon";
+import {
+  WALLET_TOPUP_MAX_CENTS,
+  WALLET_TOPUP_MIN_CENTS,
+  isWalletTopupTier,
+  normaliseAutoTopupCents,
+} from "@/lib/wallet-tiers";
 
 type Row = Record<string, unknown>;
 
 /** Maandelijkse relaykost per actieve SecureShield-relay. */
 export const RELAY_MONTHLY_CENTS = 9;
-/** Minimale eerste opwaardering: dekt de gatewaykosten van de betaling. */
-export const MIN_TOPUP_CENTS = 300;
-export const MAX_TOPUP_CENTS = 20_000;
+/** Opwaarderen kan alleen via de vaste staffel (€10–€250). */
+export const MIN_TOPUP_CENTS = WALLET_TOPUP_MIN_CENTS;
+export const MAX_TOPUP_CENTS = WALLET_TOPUP_MAX_CENTS;
 /** Onder deze grens tonen we een waarschuwing in de studio. */
 export const LOW_BALANCE_CENTS = 50;
 

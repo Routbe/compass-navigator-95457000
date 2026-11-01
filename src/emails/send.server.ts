@@ -15,6 +15,7 @@
  * boolean result plus a logged provider body is the contract.
  */
 
+import { maskEmail } from "@/lib/security/redact";
 import {
   adminAlertTemplateId,
   brevoTemplateId,
@@ -202,16 +203,12 @@ function textFromHtml(html: string): string {
     .trim();
 }
 
-function maskEmail(email: string): string {
-  return email.replace(/^(.).*(@.*)$/, "$1***$2");
-}
-
 /**
- * Log-safe view of the template params: keys stay visible so a broken template
- * variable is obvious, values are truncated and long/secret-looking strings are
- * shortened (magic links and codes must never end up in full in a log).
+ * Log-safe view of the template params: only the keys and value lengths are
+ * logged, so a broken template variable stays visible while names, e-mail
+ * addresses, message text, links and codes never reach a log.
  */
-function summariseParams(params?: Record<string, unknown>): Record<string, string> {
+export function summariseParams(params?: Record<string, unknown>): Record<string, string> {
   if (!params) return {};
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(params)) {
@@ -219,16 +216,16 @@ function summariseParams(params?: Record<string, unknown>): Record<string, strin
       out[key] = "(empty)";
       continue;
     }
-    const text = typeof value === "string" ? value : JSON.stringify(value);
-    const sensitive = /LINK|TOKEN|CODE/i.test(key) && !/CODE_LABEL|PROMO_CODE/i.test(key);
-    out[key] = sensitive
-      ? `<${key.toLowerCase()}:${text.length} chars>`
-      : text.length > 80
-        ? `${text.slice(0, 77)}…`
-        : text;
+    const text = typeof value === "string" ? value : JSON.stringify(value) ?? "";
+    out[key] = SAFE_PARAM_KEYS.has(key.toUpperCase()) && /^[a-z-]{2,10}$/i.test(text)
+      ? text
+      : `<${text.length} chars>`;
   }
   return out;
 }
+
+/** Only these short, non-personal settings are logged verbatim. */
+const SAFE_PARAM_KEYS = new Set(["LANG", "LANGUAGE", "LOCALE"]);
 
 /**
  * Fire-and-forget admin alert (Template #11) telling the team exactly which
@@ -391,7 +388,7 @@ export async function sendMail(opts: MailOptions): Promise<{ sent: boolean; erro
 
   if (attempts.length === 0) {
     console.error("[Mailer] nothing to send: no templateId, category or body supplied", {
-      subject: opts.subject,
+      correlationId,
     });
     return { sent: false, error: "No template or body was provided for this e-mail." };
   }

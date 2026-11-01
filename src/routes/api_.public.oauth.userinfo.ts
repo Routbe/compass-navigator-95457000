@@ -23,35 +23,16 @@ export const Route = createFileRoute("/api_/public/oauth/userinfo")({
 });
 
 async function handle(request: Request): Promise<Response> {
-  const headers = {
-    "access-control-allow-origin": "*",
-    "cache-control": "no-store",
-  };
-  const auth = request.headers.get("authorization") ?? "";
-  if (!auth.toLowerCase().startsWith("bearer ")) {
-    return Response.json(
-      { error: "invalid_token", error_description: "Bearer-token ontbreekt." },
-      { status: 401, headers },
-    );
-  }
-  try {
-    const { verifyAccessToken } = await import("@/lib/oauth/provider.server");
-    const { sub, userId, scopes, clientId, acr } = await verifyAccessToken(auth.slice(7).trim());
-    const { generateUserInfoResponse, ScopeForbiddenError } = await import("@/lib/auth/oidc-identifiers.server");
-    try {
-      const ip = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
-      return Response.json(await generateUserInfoResponse(userId, clientId ?? "", scopes, { sub, acr, ip }), { headers });
-    } catch (e) {
-      if (e instanceof ScopeForbiddenError) {
-        return Response.json({ error: "insufficient_scope", error_description: e.code }, { status: 403, headers });
-      }
-      throw e;
-    }
-  } catch (error) {
-    const known = error as { message?: string };
-    return Response.json(
-      { error: "invalid_token", error_description: known.message ?? "Token is ongeldig." },
-      { status: 401, headers },
-    );
-  }
+  const [{ verifyAccessToken, OAuthError }, { generateUserInfoResponse, ScopeForbiddenError }, { handleUserInfo }] =
+    await Promise.all([
+      import("@/lib/oauth/provider.server"),
+      import("@/lib/auth/oidc-identifiers.server"),
+      import("@/lib/oauth/userinfo-handler"),
+    ]);
+  return handleUserInfo(request, {
+    verifyAccessToken,
+    generateUserInfoResponse,
+    isOAuthError: (e): e is InstanceType<typeof OAuthError> => e instanceof OAuthError,
+    isScopeForbidden: (e): e is InstanceType<typeof ScopeForbiddenError> => e instanceof ScopeForbiddenError,
+  });
 }

@@ -822,14 +822,24 @@ export async function verifyAccessToken(
   const { verificationKey } = await import("./keys.server");
   const key = await verificationKey(header);
   if (!key) throw new OAuthError("invalid_token", "Onbekende ondertekensleutel.");
-  const ok = await crypto.subtle.verify(
-    { name: "ECDSA", hash: "SHA-256" },
-    key,
-    fromB64(signaturePart) as BufferSource,
-    enc.encode(`${headerPart}.${payloadPart}`) as BufferSource,
-  );
+  let ok = false;
+  try {
+    ok = await crypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      key,
+      fromB64(signaturePart) as BufferSource,
+      enc.encode(`${headerPart}.${payloadPart}`) as BufferSource,
+    );
+  } catch {
+    ok = false;
+  }
   if (!ok) throw new OAuthError("invalid_token", "Handtekening klopt niet.");
-  const payload = JSON.parse(new TextDecoder().decode(fromB64(payloadPart))) as Record<string, unknown>;
+  let payload: Record<string, unknown>;
+  try {
+    payload = JSON.parse(new TextDecoder().decode(fromB64(payloadPart))) as Record<string, unknown>;
+  } catch {
+    throw new OAuthError("invalid_token", "Ongeldig token.");
+  }
   if (!validAccessClaims(payload, issuer(), Math.floor(Date.now()/1000))) throw new OAuthError("invalid_token", "Ongeldige access-tokenclaims.");
   const rows = await sql`select t.user_id from public.oauth_access_tokens t
     join public.oauth_clients c on c.client_id=t.client_id

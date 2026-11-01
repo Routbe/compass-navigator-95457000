@@ -150,14 +150,33 @@ export async function applyStripeEvent(event: StripeEvent): Promise<string> {
       (event.type === "checkout.session.completed" &&
         (stringOf(object, "payment_status") ?? "paid") === "paid");
     if (!succeeded) return "wallet topup ignored";
+    // Het bedrag komt uit wat Stripe werkelijk int, niet uit metadata alleen:
+    // beide moeten exact een staffel (€10/25/50/100/250) in EUR zijn.
+    const { verifiedTopupCredit } = await import("./wallet-tiers");
+    const isIntent = event.type === "payment_intent.succeeded";
+    const amount = verifiedTopupCredit({
+      requestedCents: meta["amount_cents"],
+      paidCents: (object as Record<string, unknown>)[isIntent ? "amount_received" : "amount_total"],
+      currency: (object as Record<string, unknown>)["currency"],
+    });
+    if (amount === null) {
+      console.error("[wallet] topup rejected: paid amount does not match an allowed tier", {
+        event: event.id ?? null,
+      });
+      return "wallet topup rejected";
+    }
+    // Eén referentie per betaling (PaymentIntent), zodat sessie- en intent-events
+    // samen nooit dubbel bijschrijven.
+    const paymentRef = isIntent
+      ? stringOf(object, "id")
+      : (stringOf(object, "payment_intent") ?? stringOf(object, "id"));
     const { creditWallet } = await import("./wallet.server");
-    const amount = Number(meta["amount_cents"] ?? 0);
     const credited = await creditWallet({
       userId: meta["user_id"],
       amountCents: amount,
       kind: "topup",
       description: "SecureShield opwaardering",
-      reference: `stripe:${stringOf(object, "id") ?? event.id ?? ""}`,
+      reference: `stripe:${paymentRef ?? event.id ?? ""}`,
     });
     return credited ? "wallet credited" : "wallet topup duplicate";
   }
