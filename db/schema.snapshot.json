@@ -259,7 +259,14 @@
       "rls": false,
       "forceRls": false,
       "policies": [],
-      "grants": {}
+      "grants": {
+        "rout_app": [
+          "DELETE",
+          "INSERT",
+          "SELECT",
+          "UPDATE"
+        ]
+      }
     },
     {
       "schema": "neon_auth",
@@ -924,7 +931,14 @@
       "rls": false,
       "forceRls": false,
       "policies": [],
-      "grants": {}
+      "grants": {
+        "rout_app": [
+          "DELETE",
+          "INSERT",
+          "SELECT",
+          "UPDATE"
+        ]
+      }
     },
     {
       "schema": "neon_auth",
@@ -1129,7 +1143,14 @@
       "rls": false,
       "forceRls": false,
       "policies": [],
-      "grants": {}
+      "grants": {
+        "rout_app": [
+          "DELETE",
+          "INSERT",
+          "SELECT",
+          "UPDATE"
+        ]
+      }
     },
     {
       "schema": "neon_auth",
@@ -1198,7 +1219,14 @@
       "rls": false,
       "forceRls": false,
       "policies": [],
-      "grants": {}
+      "grants": {
+        "rout_app": [
+          "DELETE",
+          "INSERT",
+          "SELECT",
+          "UPDATE"
+        ]
+      }
     },
     {
       "schema": "public",
@@ -1751,7 +1779,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -1806,7 +1845,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -2246,7 +2296,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -2309,7 +2370,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -4098,7 +4170,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -5331,7 +5414,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -5761,7 +5855,18 @@
       ],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -5986,7 +6091,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -6036,7 +6152,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -6433,7 +6560,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -6806,7 +6944,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -6890,7 +7039,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -7636,7 +7796,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -7928,7 +8099,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -8848,7 +9030,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -9049,7 +9242,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -9123,7 +9327,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -9340,7 +9555,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -9890,7 +10116,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -9982,7 +10219,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -10318,6 +10566,16 @@
       "forceRls": false,
       "policies": [
         {
+          "name": "rout_owner",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "ALL",
+          "using": "(owner_user_id = rout_current_user_id())",
+          "check": "(owner_user_id = rout_current_user_id())"
+        },
+        {
           "name": "rout_scope",
           "permissive": true,
           "roles": [
@@ -10488,7 +10746,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -11032,7 +11301,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -11328,7 +11608,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -11523,7 +11814,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -11601,7 +11903,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -11696,7 +12009,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -12364,7 +12688,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -13345,6 +13680,26 @@
           "check": "true"
         },
         {
+          "name": "rout_owner",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "ALL",
+          "using": "(id = rout_current_user_id())",
+          "check": "(id = rout_current_user_id())"
+        },
+        {
+          "name": "rout_public_read",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "SELECT",
+          "using": "true",
+          "check": null
+        },
+        {
           "name": "rout_scope",
           "permissive": true,
           "roles": [
@@ -13427,7 +13782,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -13579,7 +13945,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -13951,7 +14328,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -14003,7 +14391,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -14084,7 +14483,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -14323,7 +14733,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -14636,7 +15057,18 @@
       ],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -15269,7 +15701,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -15327,7 +15770,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -15907,7 +16361,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -16323,7 +16788,18 @@
       ],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -19816,7 +20292,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "INSERT",
@@ -20056,7 +20543,18 @@
       "triggers": [],
       "rls": true,
       "forceRls": false,
-      "policies": [],
+      "policies": [
+        {
+          "name": "rout_server",
+          "permissive": true,
+          "roles": [
+            "rout_app"
+          ],
+          "cmd": "ALL",
+          "using": "true",
+          "check": "true"
+        }
+      ],
       "grants": {
         "rout_app": [
           "DELETE",
@@ -20125,6 +20623,14 @@
           "default": "now()",
           "identity": null,
           "generated": null
+        },
+        {
+          "name": "invited_user_id",
+          "type": "uuid",
+          "notNull": false,
+          "default": null,
+          "identity": null,
+          "generated": null
         }
       ],
       "constraints": [
@@ -20132,6 +20638,11 @@
           "name": "workspace_invites_invited_by_fkey",
           "kind": "f",
           "def": "FOREIGN KEY (invited_by) REFERENCES users(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "workspace_invites_invited_user_id_fkey",
+          "kind": "f",
+          "def": "FOREIGN KEY (invited_user_id) REFERENCES users(id) ON DELETE CASCADE"
         },
         {
           "name": "workspace_invites_pkey",
@@ -20257,6 +20768,46 @@
           "cmd": "ALL",
           "using": "(user_id = rout_current_user_id())",
           "check": "(user_id = rout_current_user_id())"
+        },
+        {
+          "name": "rout_team_add",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "INSERT",
+          "using": null,
+          "check": "(rout_workspace_role(workspace_id) = ANY (ARRAY['owner'::text, 'admin'::text]))"
+        },
+        {
+          "name": "rout_team_read",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "SELECT",
+          "using": "rout_is_workspace_member(workspace_id)",
+          "check": null
+        },
+        {
+          "name": "rout_team_remove",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "DELETE",
+          "using": "(rout_workspace_role(workspace_id) = ANY (ARRAY['owner'::text, 'admin'::text]))",
+          "check": null
+        },
+        {
+          "name": "rout_team_update",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "UPDATE",
+          "using": "(rout_workspace_role(workspace_id) = ANY (ARRAY['owner'::text, 'admin'::text]))",
+          "check": "(rout_workspace_role(workspace_id) = ANY (ARRAY['owner'::text, 'admin'::text]))"
         }
       ],
       "grants": {
@@ -20453,6 +21004,14 @@
           "default": "now()",
           "identity": null,
           "generated": null
+        },
+        {
+          "name": "details",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb",
+          "identity": null,
+          "generated": null
         }
       ],
       "constraints": [
@@ -20509,6 +21068,16 @@
           "cmd": "ALL",
           "using": "((workspace_id IS NOT NULL) AND rout_is_workspace_member(workspace_id))",
           "check": "((workspace_id IS NOT NULL) AND rout_is_workspace_member(workspace_id))"
+        },
+        {
+          "name": "rout_transfer_party",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "ALL",
+          "using": "((source_user_id = rout_current_user_id()) OR (target_user_id = rout_current_user_id()))",
+          "check": "((source_user_id = rout_current_user_id()) OR (target_user_id = rout_current_user_id()))"
         }
       ],
       "grants": {
@@ -20635,6 +21204,14 @@
           "default": null,
           "identity": null,
           "generated": null
+        },
+        {
+          "name": "public_profile",
+          "type": "jsonb",
+          "notNull": true,
+          "default": "'{}'::jsonb",
+          "identity": null,
+          "generated": null
         }
       ],
       "constraints": [
@@ -20686,6 +21263,16 @@
       "rls": true,
       "forceRls": false,
       "policies": [
+        {
+          "name": "rout_create",
+          "permissive": true,
+          "roles": [
+            "public"
+          ],
+          "cmd": "INSERT",
+          "using": null,
+          "check": "(rout_current_user_id() IS NOT NULL)"
+        },
         {
           "name": "rout_scope",
           "permissive": true,
@@ -21149,9 +21736,21 @@
     },
     {
       "schema": "public",
+      "name": "rout_accept_workspace_invites",
+      "args": "p_email text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_accept_workspace_invites(p_email text)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\ndeclare uid uuid := public.rout_current_user_id(); n integer := 0;\nbegin\n  if uid is null then return 0; end if;\n  with inv as (\n    update public.workspace_invites set status = 'accepted'\n    where status = 'pending'\n      and (invited_user_id = uid or (coalesce(p_email, '') <> '' and invited_user_id is null and lower(email) = lower(p_email)))\n    returning workspace_id, role\n  )\n  insert into public.workspace_members (workspace_id, user_id, role)\n  select distinct on (workspace_id) workspace_id, uid, role from inv\n  on conflict do nothing;\n  get diagnostics n = row_count;\n  return n;\nend $function$"
+    },
+    {
+      "schema": "public",
       "name": "rout_current_user_id",
       "args": "",
       "def": "CREATE OR REPLACE FUNCTION public.rout_current_user_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE\nAS $function$ select nullif(current_setting('rout.current_user_id',true),'')::uuid $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_due_sunset_accounts",
+      "args": "",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_due_sunset_accounts()\n RETURNS TABLE(id uuid, ba text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select u.id, u.user_metadata->>'neon_auth_id' from public.users u\n        where u.account_status = 'migrated_sunset' and u.sunset_at < now() limit 200 $function$"
     },
     {
       "schema": "public",
@@ -21164,6 +21763,48 @@
       "name": "rout_merge_assert",
       "args": "ok boolean, reason text",
       "def": "CREATE OR REPLACE FUNCTION public.rout_merge_assert(ok boolean, reason text)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'public'\nAS $function$\nbegin\n  if not coalesce(ok, false) then\n    raise exception '%', reason using errcode = 'P0001';\n  end if;\n  return true;\nend\n$function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_public_workspace",
+      "args": "p_slug text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_public_workspace(p_slug text)\n RETURNS TABLE(name text, slug text, avatar_url text, description text, domain text, profile_handle text, public_profile jsonb)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select w.name, w.slug, w.avatar_url, w.description,\n         case when w.domain_verified_at is not null then w.domain end,\n         (select p.username from public.profiles p\n           where p.workspace_id = w.id and coalesce((p.display_prefs->>'publicProfile')::boolean, true)\n           order by p.created_at limit 1),\n         case when coalesce((w.public_profile->>'published')::boolean, false) then w.public_profile else '{}'::jsonb end\n  from public.workspaces w where w.slug = lower(p_slug) limit 1 $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_resolve_account",
+      "args": "p_identifier text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_resolve_account(p_identifier text)\n RETURNS TABLE(user_id uuid, email text, username text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select u.id, u.email, p.username from public.users u left join public.profiles p on p.id = u.id\n  where public.rout_current_user_id() is not null and u.account_status = 'active'\n    and (lower(p.username) = lower(ltrim(p_identifier, '@')) or u.email_normalized = lower(p_identifier))\n  limit 1 $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_transfer_by_token",
+      "args": "p_hash text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_transfer_by_token(p_hash text)\n RETURNS SETOF workspace_transfers\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select * from public.workspace_transfers where token_hash = p_hash limit 1 $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_transfers_for_email",
+      "args": "p_email text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_transfers_for_email(p_email text)\n RETURNS TABLE(id uuid, source_user_id uuid)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select t.id, t.source_user_id from public.workspace_transfers t\n        where lower(t.target_email) = lower(p_email) and t.target_user_id is null\n          and t.status in ('pending', 'otp_ok') and t.expires_at > now()\n          and t.source_user_id <> public.rout_current_user_id() $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_workspace_role",
+      "args": "ws uuid",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_workspace_role(ws uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select role::text from public.workspace_members\n        where workspace_id = ws and user_id = public.rout_current_user_id() limit 1 $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_workspace_slug_taken",
+      "args": "p_slug text",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_workspace_slug_taken(p_slug text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$ select exists (select 1 from public.workspaces where slug = lower(p_slug)) $function$"
+    },
+    {
+      "schema": "public",
+      "name": "rout_workspace_team",
+      "args": "p_ws uuid",
+      "def": "CREATE OR REPLACE FUNCTION public.rout_workspace_team(p_ws uuid)\n RETURNS TABLE(user_id uuid, role text, created_at timestamp with time zone, email text, username text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select m.user_id, m.role::text, m.created_at, u.email, p.username\n  from public.workspace_members m\n  left join public.users u on u.id = m.user_id\n  left join public.profiles p on p.id = m.user_id\n  where m.workspace_id = p_ws and public.rout_workspace_role(p_ws) in ('owner', 'admin')\n  order by case m.role when 'owner' then 0 when 'admin' then 1 when 'developer' then 2 else 3 end, m.created_at\n  limit 200 $function$"
     },
     {
       "schema": "public",
@@ -21267,6 +21908,9 @@
       "USAGE"
     ],
     "public:rout_app": [
+      "USAGE"
+    ],
+    "neon_auth:rout_app": [
       "USAGE"
     ]
   }
