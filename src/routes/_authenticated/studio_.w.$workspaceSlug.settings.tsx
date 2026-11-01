@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -75,6 +75,7 @@ function WorkspaceSettingsPage() {
       <header>
         <h1 className="text-2xl font-semibold">{ws.name}</h1>
         <p className="text-sm text-muted-foreground">rout.be/w/{ws.slug}{ws.rootAlias ? ` · rout.be/${ws.rootAlias}` : ""}</p>
+        <Button asChild variant="outline" size="sm" className="mt-3"><Link to="/studio/w/$workspaceSlug/hub" params={{ workspaceSlug: ws.slug }}>Open Profiel Hub van {ws.name}</Link></Button>
       </header>
 
       {manage && <GeneralCard ws={ws} onDone={refresh} />}
@@ -90,11 +91,21 @@ function WorkspaceSettingsPage() {
         ) : <p className="text-sm text-muted-foreground">Opslag laden…</p>}
       </section>
 
-      <DocHelpLink to="/support/workspace/team-roles">Bekijk het overzicht van alle teamrollen en rechten</DocHelpLink>
-      <DocHelpLink to="/support/workspace/developer-console">Lees hoe je veilig API-sleutels rouleert</DocHelpLink>
       {manage ? <TeamTab workspaceId={ws.id} workspaceName={ws.name} /> : (
-        <p className="text-sm text-muted-foreground">Alleen eigenaars en admins beheren het team.</p>
+        <p className="text-sm text-muted-foreground">
+          Alleen eigenaars en admins beheren het team.{" "}
+          <DocHelpLink to="/support/workspace/team-roles">Bekijk het overzicht van alle teamrollen en rechten</DocHelpLink>
+        </p>
       )}
+
+      <section className={card}>
+        <h2 className="font-medium">Developer Console &amp; API</h2>
+        <p className="text-sm text-muted-foreground">API-sleutels, webhooks en OAuth-apps die je in deze workspace maakt, horen bij {ws.name}, niet bij één persoon.</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="outline" size="sm"><Link to="/studio/w/$workspaceSlug/$feature" params={{ workspaceSlug: ws.slug, feature: "dev-console" }}>Open Developer Console</Link></Button>
+          <DocHelpLink to="/support/workspace/developer-console">Lees hoe je veilig API-sleutels rouleert</DocHelpLink>
+        </div>
+      </section>
 
       {manage && <DomainCard ws={ws} onDone={refresh} />}
       {ws.role === "owner" && <DangerZone ws={ws} />}

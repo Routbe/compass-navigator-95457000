@@ -154,3 +154,24 @@ export function checkWorkspaceDelete(role: WorkspaceRole | null, workspaceName: 
   if (confirmation.trim() !== workspaceName.trim()) return "Typ de exacte naam van de workspace om te bevestigen.";
   return null;
 }
+
+/** Workspace Profile Hub (link-in-bio): owners, admins and editors edit; developers and viewers only look. */
+export function canEditWorkspaceHub(role: WorkspaceRole | null): boolean {
+  return role === "owner" || role === "admin" || role === "editor";
+}
+
+export type InviteTarget = { kind: "email"; value: string } | { kind: "username"; value: string };
+
+/** Reads an invite field: an e-mail address, or a ROUT @username (3–30 tekens: a-z, 0-9, punt, koppel- of laag streepje). */
+export function parseInviteTarget(raw: string): InviteTarget | null {
+  const v = raw.trim().toLowerCase();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) && v.length <= 254) return { kind: "email", value: v };
+  const handle = v.replace(/^@/, "");
+  if (/^[a-z0-9][a-z0-9._-]{1,28}[a-z0-9]$/.test(handle)) return { kind: "username", value: handle };
+  return null;
+}
+
+/** Human label for an invite target, as shown in lists. */
+export function inviteTargetLabel(t: InviteTarget): string {
+  return t.kind === "username" ? `@${t.value}` : t.value;
+}

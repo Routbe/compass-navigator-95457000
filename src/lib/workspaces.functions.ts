@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth/middleware";
 import { WORKSPACE_ROLES, checkMemberChange, canManageTeam, canAssignRole, type WorkspaceRole } from "./workspace-rules";
 import { unavailableWorkspaceContext } from "./workspace-availability";
 import { workspaceBillingSchema } from "./workspace-pricing";
+import { workspaceHubSchema, type WorkspaceHub } from "./workspace-hub";
 
 const roleSchema = z.enum(WORKSPACE_ROLES);
 const uuid = z.string().uuid();
@@ -19,20 +20,11 @@ export const getWorkspaceContext = createServerFn({ method: "GET" })
     if (!user) return unavailableWorkspaceContext();
     const { sql, withDbContext } = await import("@/lib/neon");
     return await withDbContext({ userId: user.id, workspaceId: null }, async () => {
-    const { sunsetStatus } = await import("./workspace-conversion.server");
-    if (await sunsetStatus(user.id)) return unavailableWorkspaceContext();
     const { resolveActiveWorkspace } = await import("./workspaces.server");
     // Pending invites are accepted only for a verified email address, matched server-side.
     const email = user.emailConfirmedAt ? user.email.toLowerCase() : "";
-    if (email) {
-      await sql.transaction([
-        sql`insert into public.workspace_members (workspace_id, user_id, role)
-            select workspace_id, ${user.id}, role from public.workspace_invites
-            where status = 'pending' and lower(email) = ${email}
-            on conflict do nothing`,
-        sql`update public.workspace_invites set status = 'accepted' where status = 'pending' and lower(email) = ${email}`,
-      ]);
-    }
+    // Invites addressed to this account by @username are accepted too (matched by account id).
+    await sql`select public.rout_accept_workspace_invites(${email || null})`;
     const rows = (await sql`
       select w.id, w.name, w.slug, w.avatar_url, w.plan, m.role::text as role
       from public.workspace_members m join public.workspaces w on w.id = m.workspace_id
@@ -69,7 +61,7 @@ const wizardSchema = z.object({
   category: z.enum(["business", "agency", "nonprofit", "event", "project"]).optional(),
   /** The suffix shown in the wizard preview; used when still free. */
   suffix: z.string().regex(/^[a-z0-9]{4}$/).optional(),
-  invites: z.array(z.object({ email: z.string().trim().toLowerCase().email().max(254), role: z.enum(["admin", "developer", "viewer"]) })).max(20).optional(),
+  invites: z.array(z.object({ target: z.string().trim().min(3).max(254), role: z.enum(["admin", "developer", "viewer"]) })).max(20).optional(),
 }).extend(workspaceBillingSchema.shape);
 
 /** Is rout.be/w/<base>-xxxx still free for this base? (suffix keeps it unique; the base must be valid and not reserved). */
@@ -81,8 +73,8 @@ export const checkWorkspaceSlugBase = createServerFn({ method: "POST" })
     const suffix = randomSlugSuffix();
     if (data.base.length < 3 || !isValidWorkspaceSlug(`${data.base}-${suffix}`)) return { ok: false as const, suffix, reason: "invalid" };
     const { sql } = await import("@/lib/neon");
-    const taken = (await sql`select 1 from public.workspaces where slug = ${`${data.base}-${suffix}`} limit 1`) as unknown[];
-    return { ok: !taken.length, suffix, reason: taken.length ? "taken" : null };
+    const taken = await slugTaken(`${data.base}-${suffix}`);
+    return { ok: !taken, suffix, reason: taken ? "taken" : null };
   });
 
 export const createWorkspace = createServerFn({ method: "POST" })
@@ -102,30 +94,32 @@ export const createWorkspace = createServerFn({ method: "POST" })
     for (let i = 0; i < 12 && !slug; i++) {
       const candidate = i === 0 && data.suffix ? matrixWorkspaceSlug(base, "free", data.suffix) : matrixWorkspaceSlug(base, "free");
       if (!isValidWorkspaceSlug(candidate)) continue;
-      const taken = (await sql`select 1 from public.workspaces where slug = ${candidate} limit 1`) as unknown[];
-      if (!taken.length) slug = candidate;
+      if (!(await slugTaken(candidate))) slug = candidate;
     }
     if (!slug) throw new Error("Geen vrij workspace-adres gevonden. Kies een andere naam.");
-    const own = (await sql`select lower(email) as e from public.users where id = ${context.userId} limit 1`) as { e: string | null }[];
-    const others = invites.filter((i) => i.email !== own[0]?.e);
+    const { resolveInvites } = await import("./workspaces.server");
+    const resolved = await resolveInvites(invites, context.userId);
+    const id = crypto.randomUUID();
     // Eén transactie: workspace, eigenaar en uitnodigingen bestaan samen of niet.
-    const res = await sql.transaction([
-      sql`insert into public.workspaces (name, slug, description, category)
-          values (${data.name}, ${slug}, ${data.description || null}, ${data.category ?? null})`,
-      sql`insert into public.workspace_members (workspace_id, user_id, role)
-          select id, ${context.userId}, 'owner' from public.workspaces where slug = ${slug}`,
-      ...others.map((i) => sql`insert into public.workspace_invites (workspace_id, email, role, invited_by)
-          select id, ${i.email}, ${i.role}::public.workspace_role, ${context.userId} from public.workspaces where slug = ${slug}
+    await sql.transaction([
+      sql`insert into public.workspaces (id, name, slug, description, category)
+          values (${id}::uuid, ${data.name}, ${slug}, ${data.description || null}, ${data.category ?? null})`,
+      sql`insert into public.workspace_members (workspace_id, user_id, role) values (${id}::uuid, ${context.userId}, 'owner')`,
+      ...resolved.map((i) => sql`insert into public.workspace_invites (workspace_id, email, role, invited_by, invited_user_id)
+          values (${id}::uuid, ${i.email}, ${i.role}::public.workspace_role, ${context.userId}, ${i.userId}::uuid)
           on conflict (workspace_id, lower(email)) where status = 'pending' do nothing`),
-      sql`select id from public.workspaces where slug = ${slug}`,
     ]);
-    const last = res[res.length - 1] as { id: string }[];
-    const id = last?.[0]?.id;
-    if (!id) throw new Error("Workspace kon niet worden aangemaakt.");
     await setActiveWorkspaceCookie(id);
     // Billing intent is validated, never trusted as proof of payment.
-    return { id, slug, invited: others.length, plan_id: data.plan_id, billing_cycle: data.billing_cycle, active_plan: "tier_starter" as const };
+    return { id, slug, invited: resolved.length, plan_id: data.plan_id, billing_cycle: data.billing_cycle, active_plan: "tier_starter" as const };
   });
+
+/** Slug check across all workspaces (RLS hides workspaces the caller is not in, so a definer helper answers). */
+async function slugTaken(slug: string): Promise<boolean> {
+  const { sql } = await import("@/lib/neon");
+  const rows = (await sql`select public.rout_workspace_slug_taken(${slug}) as taken`) as { taken: boolean }[];
+  return rows[0]?.taken === true;
+}
 
 export const listWorkspaceTeam = createServerFn({ method: "POST" })
   .middleware([requireAuth])
@@ -134,24 +128,18 @@ export const listWorkspaceTeam = createServerFn({ method: "POST" })
     const { sql } = await import("@/lib/neon");
     const { assertWorkspaceRole } = await import("./workspaces.server");
     const myRole = await assertWorkspaceRole(context.userId, data.workspaceId, ["owner", "admin"]);
-    const members = (await sql`
-      select m.user_id, m.role::text as role, m.created_at, u.email, p.username
-      from public.workspace_members m
-      left join public.users u on u.id = m.user_id
-      left join public.profiles p on p.id = m.user_id
-      where m.workspace_id = ${data.workspaceId}
-      order by case m.role when 'owner' then 0 when 'admin' then 1 when 'developer' then 2 else 3 end, m.created_at
-      limit 200
-    `) as { user_id: string; role: WorkspaceRole; created_at: string; email: string | null; username: string | null }[];
+    const members = (await sql`select * from public.rout_workspace_team(${data.workspaceId}::uuid)`) as { user_id: string; role: WorkspaceRole; created_at: string; email: string | null; username: string | null }[];
     const invites = (await sql`
-      select id, email, role::text as role, created_at from public.workspace_invites
-      where workspace_id = ${data.workspaceId} and status = 'pending' order by created_at desc limit 100
-    `) as { id: string; email: string; role: WorkspaceRole; created_at: string }[];
+      select i.id, i.email, i.role::text as role, i.created_at, p.username
+      from public.workspace_invites i left join public.profiles p on p.id = i.invited_user_id
+      where i.workspace_id = ${data.workspaceId} and i.status = 'pending' order by i.created_at desc limit 100
+    `) as { id: string; email: string; role: WorkspaceRole; created_at: string; username: string | null }[];
     return {
       myRole,
       me: context.userId,
       members: members.map((m) => ({ userId: m.user_id, role: m.role, email: m.email, username: m.username, joinedAt: String(m.created_at) })),
-      invites: invites.map((i) => ({ id: i.id, email: i.email, role: i.role, createdAt: String(i.created_at) })),
+      // Username invites show the handle only: the inviter never sees that account's e-mail address.
+      invites: invites.map((i) => ({ id: i.id, label: i.username ? `@${i.username}` : i.email, role: i.role, createdAt: String(i.created_at) })),
     };
   });
 
@@ -190,26 +178,27 @@ export const removeMember = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Invite by e-mail address or ROUT @username. Owner/admin only; owner role only from an owner. */
 export const inviteMember = createServerFn({ method: "POST" })
   .middleware([requireAuth])
-  .inputValidator((d) => z.object({ workspaceId: uuid, email: z.string().trim().toLowerCase().email().max(254), role: roleSchema }).parse(d))
+  .inputValidator((d) => z.object({ workspaceId: uuid, target: z.string().trim().min(3).max(254), role: roleSchema }).parse(d))
   .handler(async ({ data, context }) => {
     const { sql } = await import("@/lib/neon");
     const { assertWorkspaceRole } = await import("./workspaces.server");
     const actor = await assertWorkspaceRole(context.userId, data.workspaceId, ["owner", "admin"]);
     if (!canManageTeam(actor) || !canAssignRole(actor, data.role)) throw new Error("Alleen een eigenaar kan iemand eigenaar maken.");
-    const already = (await sql`
-      select 1 from public.workspace_members m join public.users u on u.id = m.user_id
-      where m.workspace_id = ${data.workspaceId} and lower(u.email) = ${data.email} limit 1
-    `) as unknown[];
-    if (already.length) throw new Error("Deze persoon is al lid.");
+    const { resolveInvites } = await import("./workspaces.server");
+    const [invite] = await resolveInvites([{ target: data.target, role: data.role }], context.userId);
+    if (!invite) throw new Error("Je bent zelf al lid van deze workspace.");
+    const team = (await sql`select user_id, email from public.rout_workspace_team(${data.workspaceId}::uuid)`) as { user_id: string; email: string | null }[];
+    if (team.some((m) => (invite.userId && m.user_id === invite.userId) || m.email?.toLowerCase() === invite.email)) throw new Error("Deze persoon is al lid.");
     await sql`
-      insert into public.workspace_invites (workspace_id, email, role, invited_by)
-      values (${data.workspaceId}, ${data.email}, ${data.role}::public.workspace_role, ${context.userId})
+      insert into public.workspace_invites (workspace_id, email, role, invited_by, invited_user_id)
+      values (${data.workspaceId}, ${invite.email}, ${data.role}::public.workspace_role, ${context.userId}, ${invite.userId}::uuid)
       on conflict (workspace_id, lower(email)) where status = 'pending'
-      do update set role = excluded.role, invited_by = excluded.invited_by
+      do update set role = excluded.role, invited_by = excluded.invited_by, invited_user_id = excluded.invited_user_id
     `;
-    return { ok: true as const };
+    return { ok: true as const, label: invite.label };
   });
 
 export const revokeInvite = createServerFn({ method: "POST" })
@@ -443,4 +432,39 @@ export const deleteWorkspace = createServerFn({ method: "POST" })
     await sql`delete from public.workspaces where id = ${data.workspaceId}`;
     await setActiveWorkspaceCookie(null);
     return { ok: true as const };
+  });
+
+export type WorkspaceHubState = {
+  workspaceId: string; name: string; slug: string; avatarUrl: string | null; role: WorkspaceRole; canEdit: boolean;
+  hub: WorkspaceHub;
+};
+
+/** The workspace's own Profile Hub (link-in-bio). Members read; owners, admins and editors edit. */
+export const getWorkspaceHub = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) => z.object({ workspaceSlug: z.string().trim().toLowerCase().max(40) }).parse(d))
+  .handler(async ({ data, context }): Promise<WorkspaceHubState> => {
+    const { sql } = await import("@/lib/neon");
+    const { getWorkspaceRole } = await import("./workspaces.server");
+    const { readHub } = await import("./workspace-hub");
+    const { canEditWorkspaceHub } = await import("./workspace-rules");
+    const ws = ((await sql`select id, name, slug, avatar_url, public_profile from public.workspaces where slug = ${data.workspaceSlug} limit 1`) as
+      { id: string; name: string; slug: string; avatar_url: string | null; public_profile: unknown }[])[0];
+    const role = ws ? await getWorkspaceRole(context.userId, ws.id) : null;
+    if (!ws || !role) throw new Error("Forbidden");
+    return { workspaceId: ws.id, name: ws.name, slug: ws.slug, avatarUrl: ws.avatar_url, role, canEdit: canEditWorkspaceHub(role), hub: readHub(ws.public_profile) };
+  });
+
+export const saveWorkspaceHub = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d) => z.object({ workspaceId: uuid, hub: workspaceHubSchema }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { sql } = await import("@/lib/neon");
+    const { getWorkspaceRole } = await import("./workspaces.server");
+    const { canEditWorkspaceHub } = await import("./workspace-rules");
+    if (!canEditWorkspaceHub(await getWorkspaceRole(context.userId, data.workspaceId))) {
+      throw new Error("Alleen eigenaars, admins en editors bewerken de Profiel Hub van deze workspace.");
+    }
+    await sql`update public.workspaces set public_profile = ${JSON.stringify(data.hub)}::jsonb where id = ${data.workspaceId}`;
+    return { ok: true as const, hub: data.hub };
   });

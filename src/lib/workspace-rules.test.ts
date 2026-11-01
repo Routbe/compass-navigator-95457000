@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canManageTeam, canUseDeveloperTools, checkMemberChange, slugify } from "./workspace-rules";
+import { canEditWorkspaceHub, canManageTeam, canUseDeveloperTools, checkMemberChange, parseInviteTarget, slugify } from "./workspace-rules";
 
 describe("workspace rules", () => {
   it("editors cannot open the developer console; owner/admin/developer can", () => {
@@ -43,4 +43,21 @@ describe("workspace address rout.be/w/<name>", () => {
   it("builds the slug from the name", () => expect(workspaceSlug("Acme Corp")).toBe("acme-corp"));
   it("adds a suffix when taken", () => expect(workspaceSlug("Acme Corp", 1)).toBe("acme-corp-2"));
   it("never builds a reserved slug", () => expect(isValidWorkspaceSlug(workspaceSlug("Studio"))).toBe(true));
+
+  it("owners, admins and editors edit the workspace hub; developers and viewers do not", () => {
+    expect(canEditWorkspaceHub("owner")).toBe(true);
+    expect(canEditWorkspaceHub("admin")).toBe(true);
+    expect(canEditWorkspaceHub("editor")).toBe(true);
+    expect(canEditWorkspaceHub("developer")).toBe(false);
+    expect(canEditWorkspaceHub("viewer")).toBe(false);
+    expect(canEditWorkspaceHub(null)).toBe(false);
+  });
+
+  it("invites read e-mail addresses and @usernames", () => {
+    expect(parseInviteTarget(" Naam@Bedrijf.be ")).toEqual({ kind: "email", value: "naam@bedrijf.be" });
+    expect(parseInviteTarget("@Lisa")).toEqual({ kind: "username", value: "lisa" });
+    expect(parseInviteTarget("lisa.b")).toEqual({ kind: "username", value: "lisa.b" });
+    expect(parseInviteTarget("@a")).toBeNull();
+    expect(parseInviteTarget("twee woorden")).toBeNull();
+  });
 });

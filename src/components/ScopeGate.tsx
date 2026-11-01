@@ -18,7 +18,9 @@ export function ScopeGate({ workspaceSlug, feature }: { workspaceSlug: string | 
       .then(() => {
         if (!alive) return;
         qc.clear();
-        void navigate({ to: SCOPED_FEATURES[feature], replace: true });
+        // A workspace has its own Profile Hub; never open the personal one in workspace mode.
+        const to = workspaceSlug && feature === "studio" ? `/studio/w/${encodeURIComponent(workspaceSlug)}/hub` : SCOPED_FEATURES[feature];
+        void navigate({ to: to as never, replace: true });
       })
       .catch(() => alive && setError(true));
     return () => { alive = false; };

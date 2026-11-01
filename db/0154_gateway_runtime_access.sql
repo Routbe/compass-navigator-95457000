@@ -3,7 +3,13 @@
 --
 -- 1. The owner login steps down to rout_app per batch (src/lib/neon.ts:
 --    `set local role rout_app`), so RLS keeps applying.
-grant rout_app to neondb_owner with inherit false, set true;
+do $$
+begin
+  -- Only on Neon, where the linked login is neondb_owner; replays on a fresh database skip it.
+  if exists (select 1 from pg_roles where rolname = 'neondb_owner') then
+    execute 'grant rout_app to neondb_owner with inherit false, set true';
+  end if;
+end $$;
 
 -- 2. Better Auth tables used by src/lib/better-auth.server.ts.
 grant usage on schema neon_auth to rout_app;

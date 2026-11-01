@@ -62,7 +62,12 @@ function NewWorkspaceWizard() {
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY);
-      if (raw) setD({ ...emptyDraft(), ...(JSON.parse(raw) as Partial<WizardDraft>) });
+      if (raw) {
+        const saved = JSON.parse(raw) as Omit<Partial<WizardDraft>, "invites"> & { invites?: { target?: string; email?: string; role: InviteRole }[] };
+        // Older drafts stored invites as { email }; keep them as { target }.
+        const invites = (saved.invites ?? []).map((i) => ({ target: i.target ?? i.email ?? "", role: i.role })).filter((i) => i.target);
+        setD({ ...emptyDraft(), ...saved, invites });
+      }
     } catch { /* ignore */ }
   }, []);
   useEffect(() => {
@@ -85,9 +90,9 @@ function NewWorkspaceWizard() {
   const slugBlocked = current === "address" && (slugQ.isLoading || (slugQ.data && !slugQ.data.ok));
 
   const addInvite = () => {
-    const email = inviteEmail.trim().toLowerCase();
-    if (!email) return;
-    const next = { ...d, invites: [...d.invites, { email, role: inviteRole }] };
+    const target = inviteEmail.trim().toLowerCase();
+    if (!target) return;
+    const next = { ...d, invites: [...d.invites, { target, role: inviteRole }] };
     const e = stepError("team", next);
     if (e) return toast.error(e);
     setD(next);
@@ -215,7 +220,7 @@ function NewWorkspaceWizard() {
             <DocHelpLink to="/support/workspace/getting-started/invite-team">Hoe nodig ik mijn collega’s veilig uit?</DocHelpLink>
             <p className="text-sm text-muted-foreground">Nodig je team uit. Ze krijgen een e-mail en worden lid zodra ze inloggen met dat adres. Je kunt dit ook overslaan.</p>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Input type="email" value={inviteEmail} placeholder="naam@bedrijf.be" onChange={(e) => setInviteEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addInvite())} />
+              <Input aria-label="E-mail of @gebruikersnaam" value={inviteEmail} placeholder="naam@bedrijf.be of @gebruikersnaam" onChange={(e) => setInviteEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addInvite())} />
               <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as InviteRole)} className="h-10 rounded-md border border-input bg-background px-3 text-sm" aria-label="Rol">
                 {INVITE_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
               </select>
@@ -224,10 +229,10 @@ function NewWorkspaceWizard() {
             <ul className="divide-y divide-border rounded-xl border border-border">
               {d.invites.length === 0 && <li className="p-3 text-sm text-muted-foreground">Nog niemand uitgenodigd.</li>}
               {d.invites.map((i, idx) => (
-                <li key={i.email} className="flex items-center gap-2 p-3 text-sm">
-                  <span className="min-w-0 flex-1 truncate">{i.email}</span>
+                <li key={i.target} className="flex items-center gap-2 p-3 text-sm">
+                  <span className="min-w-0 flex-1 truncate">{i.target}</span>
                   <span className="text-xs text-muted-foreground">{ROLE_LABEL[i.role]}</span>
-                  <button type="button" aria-label={`${i.email} verwijderen`} onClick={() => setD({ ...d, invites: d.invites.filter((_, j) => j !== idx) })} className="text-muted-foreground hover:text-destructive">
+                  <button type="button" aria-label={`${i.target} verwijderen`} onClick={() => setD({ ...d, invites: d.invites.filter((_, j) => j !== idx) })} className="text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </li>

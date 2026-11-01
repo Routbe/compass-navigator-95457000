@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, Minus, ShieldCheck, ArrowRight, AlertTriangle } from "lucide-react";
+import { Check, Minus, ShieldCheck, ArrowRight, AlertTriangle, X } from "lucide-react";
+import { ROLE_LABELS, canAssignRole, canEditWorkspaceHub, canManageTeam, canUseDeveloperTools, checkWorkspaceDelete, type WorkspaceRole } from "@/lib/workspace-rules";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -22,11 +23,48 @@ export function CompareTable({ rows = [{ feature: "Broncode beschikbaar", rout: 
  const cell = (v: string | boolean) => typeof v === "boolean" ? v ? <Check className="size-4 text-docs-link" aria-label="Ja" /> : <Minus className="size-4 text-destructive" aria-label="Nee" /> : v;
  return <div className="my-6 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th className="p-3">Kenmerk</th><th className="p-3">ROUT</th><th className="p-3">{other}</th></tr></thead><tbody>{rows.map(row => <tr className="border-t border-border" key={row.feature}><th className="p-3 font-medium">{row.feature}</th><td className="p-3">{cell(row.rout)}</td><td className="p-3">{cell(row.other)}</td></tr>)}</tbody></table></div>;
 }
+/** Rows come from the same rules the server enforces (workspace-rules.ts), so the table cannot drift from the app. */
+type MatrixCell = boolean | string;
+const MATRIX_ROLES = ["owner", "admin", "developer", "editor", "viewer"] as const satisfies readonly WorkspaceRole[];
+const MATRIX_ROWS: { title: string; note?: string; cell: (r: WorkspaceRole) => MatrixCell }[] = [
+  { title: "Facturatie & abonnement", note: "Afrekenen vanuit de app is nog niet live.", cell: r => r === "owner" },
+  { title: "Workspace verwijderen", cell: r => checkWorkspaceDelete(r, "x", "x") === null },
+  { title: "Iemand eigenaar maken", cell: r => canAssignRole(r, "owner") },
+  { title: "Team & uitnodigingen", cell: r => canManageTeam(r) },
+  { title: "Naam, adres & eigen domein", cell: r => canManageTeam(r) },
+  { title: "API-sleutels, webhooks & OAuth-apps", cell: r => canUseDeveloperTools(r) },
+  { title: "Profiel Hub van de workspace bewerken", cell: r => canEditWorkspaceHub(r) },
+  { title: "QR-codes & korte links maken", note: "Nog niet per rol beperkt: elk lid kan dit.", cell: () => true },
+];
 export function RoleMatrix() {
- return <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{["Actie", "Owner", "Admin", "Developer", "Viewer"].map(s => <th key={s} className="p-3">{s}</th>)}</tr></thead><tbody>{[["Team beheren", true, true, false, false], ["Developer-tools openen", true, true, true, false], ["Workspace verwijderen", true, false, false, false]].map(([title, ...values]) => <tr key={String(title)} className="border-t border-border"><th className="p-3">{title}</th>{values.map((v, i) => <td className="p-3" key={i}>{v ? <Check className="size-4 text-docs-link" aria-label="Toegestaan" /> : <Minus className="size-4 text-muted-foreground" aria-label="Niet toegestaan" />}</td>)}</tr>)}</tbody></table></div>;
+  const [focus, setFocus] = useState<WorkspaceRole | null>(null);
+  const mark = (v: MatrixCell) => typeof v === "string" ? <span className="text-xs">{v}</span> : v
+    ? <Check className="size-4 text-docs-link" aria-label="Toegestaan" />
+    : <X className="size-4 text-muted-foreground" aria-label="Niet toegestaan" />;
+  return <div className="my-6">
+    <div className="mb-3 flex flex-wrap gap-1.5" role="group" aria-label="Markeer een rol">
+      {MATRIX_ROLES.map(r => <button key={r} type="button" aria-pressed={focus === r} onClick={() => setFocus(focus === r ? null : r)} className={`rounded-full border px-3 py-1 text-xs ${focus === r ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground"}`}>{ROLE_LABELS[r]}</button>)}
+    </div>
+    <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+      <thead><tr><th className="p-3">Recht</th>{MATRIX_ROLES.map(r => <th key={r} className={`p-3 text-center ${focus === r ? "bg-secondary" : ""}`}>{ROLE_LABELS[r]}</th>)}</tr></thead>
+      <tbody>{MATRIX_ROWS.map(row => <tr key={row.title} className="border-t border-border">
+        <th className="p-3 font-medium">{row.title}{row.note && <span className="block text-xs font-normal text-muted-foreground">{row.note}</span>}</th>
+        {MATRIX_ROLES.map(r => <td key={r} className={`p-3 ${focus === r ? "bg-secondary" : ""}`}><span className="flex justify-center">{mark(row.cell(r))}</span></td>)}
+      </tr>)}</tbody>
+    </table></div>
+  </div>;
 }
 export function WorkspaceVsPersonalTable() { return <CompareTable other="Workspace" rows={[{ feature: "Toegang", rout: "Jouw persoonlijke login", other: "Teamleden met een eigen login" }, { feature: "Identiteit", rout: "Je persoonlijke profiel", other: "Een aparte bedrijfsomgeving" }, { feature: "Beheer", rout: "Persoonlijke gegevens", other: "Eigen leden, domeinen en opslag" }]} />; }
-export function LimitBar({ used = 45, limit = 50 }: { used?: number; limit?: number }) { return <figure className="my-6"><figcaption className="mb-2 text-sm">Voorbeeld: {used} GB / {limit} GB gebruikt</figcaption><progress className="h-2 w-full accent-primary" value={used} max={limit} /></figure>; }
+/** Illustrates the storage bar in workspace settings; turns amber from 80% and red from 95%. */
+export function LimitBar({ used = 45, limit = 50, unit = "GB", label = "Opslag van deze workspace" }: { used?: number; limit?: number; unit?: string; label?: string }) {
+  const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const tone = pct >= 95 ? "bg-destructive" : pct >= 80 ? "bg-docs-warning" : "bg-primary";
+  return <figure className="my-6 rounded-lg border border-border p-4">
+    <figcaption className="mb-2 flex items-baseline justify-between gap-3 text-sm"><span className="font-medium">{label}</span><span className="font-mono text-xs text-muted-foreground">{used} {unit} / {limit} {unit} gebruikt</span></figcaption>
+    <div className="h-2 w-full overflow-hidden rounded-full bg-muted" role="meter" aria-valuemin={0} aria-valuemax={limit} aria-valuenow={used} aria-label={label}><div className={`h-full rounded-full ${tone}`} style={{ width: `${pct}%` }} /></div>
+    <p className="mt-2 text-xs text-muted-foreground">{pct}% · Voorbeeld{pct >= 80 ? " — bijna vol: ruim bestanden op of kies een groter plan." : ""}</p>
+  </figure>;
+}
 export function AnalyticsPreview() { return <div className="my-8 grid grid-cols-3 gap-3">{[["Opgeslagen QR", "24"], ["Korte links", "8"], ["Totaal scans", "1.284"]].map(([label, value]) => <div key={label} className="min-w-0 rounded-lg border border-border p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 text-xl font-medium">{value}</p><span className="text-xs text-muted-foreground">Voorbeelddata</span></div>)}</div>; }
 export function SecurityShield({ status }: { status?: string }) { return <div role="status" className="my-6 flex items-center gap-3 border-y border-border py-5"><ShieldCheck className="size-6 text-docs-link" /><span>{status ?? "Platformstatus niet live geverifieerd"}</span></div>; }
 export function WarningBox({ children }: { children: ReactNode }) { return <aside className="my-6 flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-5 text-sm"><AlertTriangle className="size-5 shrink-0 text-destructive" /><div>{children}</div></aside>; }

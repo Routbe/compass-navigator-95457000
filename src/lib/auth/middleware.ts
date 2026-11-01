@@ -11,8 +11,7 @@ export const requireAuth = createMiddleware({ type: "function" }).server(async (
   const { currentUser } = await import("./session.server");
   const user = await currentUser();
   if (!user) throw new Error("Unauthorized");
-  // Converted accounts (now a Workspace) may only sign in to see the sunset notice.
-  const { sunsetStatus } = await import("@/lib/workspace-conversion.server");
+  // Converted accounts keep full access during their 30-day sunset (as admin of the new workspace).
   const { createUserDb } = await import("@/lib/db/user-client.server");
   const db = createUserDb(user.id);
   const claims = {
@@ -24,7 +23,6 @@ export const requireAuth = createMiddleware({ type: "function" }).server(async (
   const { withDbContext } = await import("@/lib/neon");
   const workspaceId = await activeWorkspaceCookie();
   return withDbContext({ userId: user.id, workspaceId }, async () => {
-    if (await sunsetStatus(user.id)) throw new Error("account_sunset");
     return next({ context: { userId: user.id, user, claims, db } });
   });
 });

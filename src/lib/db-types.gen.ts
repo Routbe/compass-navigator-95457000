@@ -1979,6 +1979,7 @@ export interface PublicWorkspaceInvitesRow {
   "invited_by": string;
   "status": string;
   "created_at": string | Date;
+  "invited_user_id": string | null;
 }
 
 export interface PublicWorkspaceMembersRow {
@@ -2008,6 +2009,7 @@ export interface PublicWorkspaceTransfersRow {
   "completed_at": string | Date | null;
   "expires_at": string | Date;
   "created_at": string | Date;
+  "details": JsonValue;
 }
 
 export interface PublicWorkspacesRow {
@@ -2025,6 +2027,7 @@ export interface PublicWorkspacesRow {
   "legacy_user_id": string | null;
   "description": string | null;
   "category": string | null;
+  "public_profile": JsonValue;
 }
 
 export interface StorageBucketsRow {

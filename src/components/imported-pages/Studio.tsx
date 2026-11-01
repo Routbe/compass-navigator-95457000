@@ -12,6 +12,7 @@ import { BadgeCheck, Lock, Sparkles, HeartHandshake, ChevronDown, Check, Calenda
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAuth } from "@/hooks/useAuth";
 import { getVerificationState } from "@/lib/verification.functions";
+import { getWorkspaceContext } from "@/lib/workspaces.functions";
 import { verifiedTabUnlocked } from "@/lib/studio-access";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { IdentityVerification } from "@/components/settings/IdentityVerification";
@@ -58,6 +59,14 @@ export default function Studio() {
     retry: false,
   });
   const unlocked = verifiedTabUnlocked(state.data);
+  // In workspace mode Studio means the workspace's own Profile Hub, not this person's.
+  const ctxFn = useServerFn(getWorkspaceContext);
+  const wsCtx = useQuery({ queryKey: ["workspace-context"], queryFn: () => ctxFn(), enabled: Boolean(user), retry: false });
+  const ctxData = wsCtx.data;
+  const activeWorkspace = ctxData?.available && ctxData.activeWorkspaceId ? ctxData.workspaces.find((w) => w.id === ctxData.activeWorkspaceId) : undefined;
+  useEffect(() => {
+    if (activeWorkspace) nav(`/studio/w/${encodeURIComponent(activeWorkspace.slug)}/hub`, { replace: true });
+  }, [activeWorkspace, nav]);
 
   useEffect(() => {
     if (!loading && !user) nav("/auth/sign-in", { replace: true });
@@ -79,7 +88,7 @@ export default function Studio() {
       crumbs={[{ label: "Studio" }]}
       trustBadges
     >
-      {loading || !user ? (
+      {loading || !user || activeWorkspace ? (
         <div className="flex min-h-[40vh] items-center justify-center">
           <div className="relative h-24 w-24">
             <BrandLoader label={t("studio.studio.loading")} />

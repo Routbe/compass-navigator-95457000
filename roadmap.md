@@ -39,3 +39,15 @@
 - [ ] Enable app data access — blocked because the linked connection uses neondb_owner; the app requires the existing restricted rout_app account.
 - [ ] Configure the original account system — blocked by missing authentication configuration.
 - [ ] Configure external storage, email, and payments — blocked by missing service credentials.
+
+## Workspaces & B2B documentation (Nov 2026)
+- [x] Expand the five /support/workspace articles with accurate role, switching, API, domain and limit content; upgrade RoleMatrix and LimitBar.
+- [x] Contextual help links in workspace Team settings and the console API page.
+- [x] Workspace Profile Hub: own link-in-bio editor per workspace, shown on rout.be/w/<slug>; Studio in workspace mode opens it instead of the personal hub.
+- [x] Database access rules so workspace creation, team lists, invites, conversion and profiles work under the restricted login (needs approval to apply).
+- [x] Conversion: old login keeps working 30 days (as workspace admin) before removal.
+- [x] Conversion wizard asks organisation type, description, extra invites and plan.
+- [x] Invite team members by @username as well as e-mail.
+- [x] Verify: typecheck, tests, team-roles help link routes correctly.
+- [ ] Click through workspace creation, @username invite and conversion while signed in — not yet done in the browser; database steps verified directly.
+- [ ] Wallet top-up fix (security finding) — waiting for allowed top-up amounts from the user.
