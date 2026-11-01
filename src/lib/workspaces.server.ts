@@ -56,3 +56,21 @@ export async function countOwners(workspaceId: string): Promise<number> {
   `) as { n: number }[];
   return Number(rows[0]?.n ?? 0);
 }
+
+export type ResolvedInvite = { email: string; userId: string | null; role: string; label: string };
+
+/** Turns e-mail / @username invite fields into stored invites. Unknown usernames are refused; the caller is skipped. */
+export async function resolveInvites(list: { target: string; role: string }[], selfId: string): Promise<ResolvedInvite[]> {
+  const out: ResolvedInvite[] = [];
+  for (const item of list) {
+    const t = parseInviteTarget(item.target);
+    if (!t) throw new Error(`"${item.target}" is geen geldig e-mailadres of @gebruikersnaam.`);
+    const found = ((await sql`select user_id, email from public.rout_resolve_account(${t.value})`) as { user_id: string; email: string }[])[0];
+    if (t.kind === "username" && !found) throw new Error(`Geen ROUT-account gevonden met ${inviteTargetLabel(t)}.`);
+    if (found?.user_id === selfId) continue;
+    const email = (found?.email ?? t.value).toLowerCase();
+    if (out.some((o) => o.email === email)) continue;
+    out.push({ email, userId: t.kind === "username" ? found!.user_id : null, role: item.role, label: inviteTargetLabel(t) });
+  }
+  return out;
+}

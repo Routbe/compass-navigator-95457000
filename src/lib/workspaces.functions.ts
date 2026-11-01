@@ -97,6 +97,7 @@ export const createWorkspace = createServerFn({ method: "POST" })
       if (!(await slugTaken(candidate))) slug = candidate;
     }
     if (!slug) throw new Error("Geen vrij workspace-adres gevonden. Kies een andere naam.");
+    const { resolveInvites } = await import("./workspaces.server");
     const resolved = await resolveInvites(invites, context.userId);
     const id = crypto.randomUUID();
     // Eén transactie: workspace, eigenaar en uitnodigingen bestaan samen of niet.
@@ -118,26 +119,6 @@ async function slugTaken(slug: string): Promise<boolean> {
   const { sql } = await import("@/lib/neon");
   const rows = (await sql`select public.rout_workspace_slug_taken(${slug}) as taken`) as { taken: boolean }[];
   return rows[0]?.taken === true;
-}
-
-type ResolvedInvite = { email: string; userId: string | null; role: string; label: string };
-
-/** Turns e-mail / @username invite fields into stored invites. Unknown usernames are refused; the caller is skipped. */
-async function resolveInvites(list: { target: string; role: string }[], selfId: string): Promise<ResolvedInvite[]> {
-  const { sql } = await import("@/lib/neon");
-  const { parseInviteTarget, inviteTargetLabel } = await import("./workspace-rules");
-  const out: ResolvedInvite[] = [];
-  for (const item of list) {
-    const t = parseInviteTarget(item.target);
-    if (!t) throw new Error(`"${item.target}" is geen geldig e-mailadres of @gebruikersnaam.`);
-    const found = ((await sql`select user_id, email from public.rout_resolve_account(${t.value})`) as { user_id: string; email: string }[])[0];
-    if (t.kind === "username" && !found) throw new Error(`Geen ROUT-account gevonden met ${inviteTargetLabel(t)}.`);
-    if (found?.user_id === selfId) continue;
-    const email = (found?.email ?? t.value).toLowerCase();
-    if (out.some((o) => o.email === email)) continue;
-    out.push({ email, userId: t.kind === "username" ? found!.user_id : null, role: item.role, label: inviteTargetLabel(t) });
-  }
-  return out;
 }
 
 export const listWorkspaceTeam = createServerFn({ method: "POST" })
@@ -206,6 +187,7 @@ export const inviteMember = createServerFn({ method: "POST" })
     const { assertWorkspaceRole } = await import("./workspaces.server");
     const actor = await assertWorkspaceRole(context.userId, data.workspaceId, ["owner", "admin"]);
     if (!canManageTeam(actor) || !canAssignRole(actor, data.role)) throw new Error("Alleen een eigenaar kan iemand eigenaar maken.");
+    const { resolveInvites } = await import("./workspaces.server");
     const [invite] = await resolveInvites([{ target: data.target, role: data.role }], context.userId);
     if (!invite) throw new Error("Je bent zelf al lid van deze workspace.");
     const team = (await sql`select user_id, email from public.rout_workspace_team(${data.workspaceId}::uuid)`) as { user_id: string; email: string | null }[];
