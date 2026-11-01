@@ -1,5 +1,5 @@
 /** Pure rules for the 5-step "new workspace" wizard. Shared by the UI and createWorkspace (server). */
-import { isValidWorkspaceSlug, slugify } from "./workspace-rules";
+import { isValidWorkspaceSlug, parseInviteTarget, slugify } from "./workspace-rules";
 import { WORKSPACE_PRICING, workspaceBillingSchema, type WorkspacePlanId, type BillingCycle } from "./workspace-pricing";
 
 export const WIZARD_STEPS = ["identity", "address", "category", "team", "plan"] as const;
@@ -25,14 +25,13 @@ export type WizardDraft = {
   avatarUrl: string | null;
   slugBase: string;
   category: WorkspaceCategory | null;
-  invites: { email: string; role: InviteRole }[];
+  /** `target` is an e-mail address or a ROUT @username. */
+  invites: { target: string; role: InviteRole }[];
   plan_id: WorkspacePlanId;
   billing_cycle: BillingCycle;
 };
 
 export const emptyDraft = (): WizardDraft => ({ name: "", description: "", avatarUrl: null, slugBase: "", category: null, invites: [], plan_id: "tier_starter", billing_cycle: "monthly" });
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /** Error message for a step, or null when the step is complete. */
 export function stepError(step: WizardStep, d: WizardDraft): string | null {
@@ -51,11 +50,12 @@ export function stepError(step: WizardStep, d: WizardDraft): string | null {
       if (d.invites.length > MAX_WIZARD_INVITES) return `Maximaal ${MAX_WIZARD_INVITES} uitnodigingen tegelijk.`;
       const seen = new Set<string>();
       for (const i of d.invites) {
-        const e = i.email.trim().toLowerCase();
-        if (!EMAIL_RE.test(e)) return `"${i.email}" is geen geldig e-mailadres.`;
-        if (seen.has(e)) return `${e} staat er twee keer in.`;
+        const t = parseInviteTarget(i.target);
+        if (!t) return `"${i.target}" is geen geldig e-mailadres of @gebruikersnaam.`;
+        const key = `${t.kind}:${t.value}`;
+        if (seen.has(key)) return `${i.target.trim()} staat er twee keer in.`;
         if (!(INVITE_ROLES as readonly string[]).includes(i.role)) return "Ongeldige rol.";
-        seen.add(e);
+        seen.add(key);
       }
       return null;
     }

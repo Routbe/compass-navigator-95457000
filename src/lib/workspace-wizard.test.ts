@@ -21,9 +21,9 @@ describe("workspace wizard", () => {
   it("validates invites: email, duplicates, role", () => {
     const d = emptyDraft();
     expect(stepError("team", d)).toBeNull();
-    expect(stepError("team", { ...d, invites: [{ email: "nope", role: "admin" }] })).not.toBeNull();
-    expect(stepError("team", { ...d, invites: [{ email: "a@b.be", role: "admin" }, { email: "A@b.be", role: "viewer" }] })).not.toBeNull();
-    expect(stepError("team", { ...d, invites: [{ email: "a@b.be", role: "developer" }] })).toBeNull();
+    expect(stepError("team", { ...d, invites: [{ target: "nope", role: "admin" }] })).not.toBeNull();
+    expect(stepError("team", { ...d, invites: [{ target: "a@b.be", role: "admin" }, { target: "A@b.be", role: "viewer" }] })).not.toBeNull();
+    expect(stepError("team", { ...d, invites: [{ target: "a@b.be", role: "developer" }] })).toBeNull();
   });
   it("free workspaces get no storage and keep the suffix", () => {
     const free = WORKSPACE_PLAN_COMPARISON[0];
